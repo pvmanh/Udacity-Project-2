@@ -26,5 +26,21 @@
 	{
 		"ParameterKey": "MyDestinationCidrBlock",
 		"ParameterValue": "0.0.0.0/0"
+	},
+	{
+		"ParameterKey": "MyInstanceJumbox",
+		"ParameterValue": "t2.micro"
+	},
+	{
+		"ParameterKey": "MyAMIJumbox",
+		"ParameterValue": "ami-006dcf34c09e50022"
+	},
+	{
+		"ParameterKey": "MyInstanceMachine",
+		"ParameterValue": "t3.medium"
+	},
+	{
+		"ParameterKey": "MyAMI",
+		"ParameterValue": "ami-006dcf34c09e50022"
 	}
 ]

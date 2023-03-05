@@ -39,6 +39,25 @@ Parameters:
     Description: My Destination Cidr Block
     Type: String
     Default: 0.0.0.0/0
+
+  MyInstanceJumbox:
+    Description: EC2 Instance Jumbox
+    Type: String
+    AllowedValues: [t2.micro, t3.micro]
+
+  MyAMIJumbox:
+    Description: AMI ID Jumbox
+    Type: AWS::EC2::Image::Id
+
+  MyInstanceMachine:
+    Description: EC2 Instance Machine Type
+    Type: String
+    AllowedValues: [t2.medium, t3.medium]
+
+  MyAMI:
+    Description: AMI ID
+    Type: AWS::EC2::Image::Id
+
 Resources:
   # instace profile contains the IAM Role name(s) that we want to associate to our auto scaling EC2 Servers
   # never give too much permissions to your EC2 instances! if they get hacked, the permissions get hacked also!
@@ -294,6 +313,101 @@ Resources:
           ToPort: 65535
           CidrIp: !Ref MyDestinationCidrBlock
 
+  myJumboxInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      KeyName: jumbox-key
+      ImageId: !Ref MyAMIJumbox
+      InstanceType: !Ref MyInstanceJumbox
+      NetworkInterfaces:
+        - DeviceIndex: "0"
+          AssociatePublicIpAddress: true
+          GroupSet:
+            - !Ref myJumBoxSecurityGroup
+          SubnetId: !Ref myPublicSubnet1
+      BlockDeviceMappings:
+        - DeviceName: "/dev/sdk"
+          Ebs:
+            VolumeSize: 10
+
+  myWebApplicationLaunchConfiguration:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ImageId: !Ref MyAMI
+      InstanceType: !Ref MyInstanceMachine
+      KeyName: private-devops-key
+      IamInstanceProfile: !Ref myInstanceProfile
+      SecurityGroups:
+        - !Ref myWebAppSecurityGroup
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          apt-get update -y
+          apt-get install apache2 -y
+          systemctl start apache2.service
+          cd /var/www/html
+          aws s3 cp s3::/udacity-demo-1/index.html
+      BlockDeviceMappings:
+        - DeviceName: "/dev/sdk"
+          Ebs:
+            VolumeSize: 10
+
+  myWebAppTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 8
+      HealthyThresholdCount: 2
+      Port: 80
+      Protocol: HTTP
+      UnhealthyThresholdCount: 5
+      VpcId: !Ref myVPC
+
+  myAutoScallingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      VPCZoneIdentifier:
+        - !Ref myPrivateSubnet1
+        - !Ref myPrivateSubnet2
+      LaunchConfigurationName: !Ref myWebApplicationLaunchConfiguration
+      MaxSize: 2
+      MinSize: 3
+      TargetGroupARNs:
+        - !Ref myWebAppTargetGroup
+
+  myLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      SecurityGroups:
+        - !Ref myLoadBalanceSecurityGroup
+      Subnets:
+        - !Ref myPublicSubnet1
+        - !Ref myPublicSubnet2
+  
+  myListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref myWebAppTargetGroup
+      LoadBalancerArn: !Ref myLoadBalancer
+      Port: '80'
+      Protocol: HTTP
+
+  myListenerRule:
+      Type: AWS::ElasticLoadBalancingV2::ListenerRule
+      Properties:
+        Actions:
+        - Type: forward
+          TargetGroupArn: !Ref myWebAppTargetGroup
+        Conditions:
+        - Field: path-pattern
+          Values: [/]
+        ListenerArn: !Ref myListener
+        Priority: 1
+
   # ProfileWithRolesForOurApp:
   #   Type: AWS::IAM::InstanceProfile
   #   Properties: 
@@ -305,7 +419,29 @@ Outputs:
   # for example, if you create a Load Balancer
   # it's nice to output the URL to it here, so that we don't have to go to the console to get it.
 
+  VPC:
+    Description: A reference to the created VPC
+    Value: !Ref myVPC
+    Export:
+      Name: !Sub ${EnvironmentName}-VPCID
 
+  PublicSubnets:
+    Description: A list of the public subnets
+    Value: !Join [ ",", [ !Ref myPublicSubnet1, !Ref myPublicSubnet2 ]]
+    Export:
+      Name: !Sub ${EnvironmentName}-PUB-NETS
+
+  PrivateSubnets:
+    Description: A list of the private subnets
+    Value: !Join [ ",", [ !Ref myPrivateSubnet1, !Ref myPrivateSubnet1 ]]
+    Export:
+      Name: !Sub ${EnvironmentName}-PRIV-NETS
+
+  WebAppLoadBalancerDNSName:
+    Description: DNS name or Public URL of the Load Balancer
+    Value: !Join [ "", [ 'http://', !GetAtt myLoadBalancer.DNSName ]]
+    Export:
+      Name: !Sub ${EnvironmentName}-LB-DNSName
 
 # Sample UserData
 # When creating your Launch Configuration, you may need a UserData script
