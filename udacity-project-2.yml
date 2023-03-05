@@ -28,7 +28,19 @@ Resources:
         - Key: Name
           Value: !Ref EnvironmentName
 
-
+  myInternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Ref EnvironmentName
+  
+  myVPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref myVPC
+      InternetGatewayId: !Ref myInternetGateway
+  
   # ProfileWithRolesForOurApp:
   #   Type: AWS::IAM::InstanceProfile
   #   Properties: 
