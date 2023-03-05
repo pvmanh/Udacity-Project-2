@@ -15,6 +15,26 @@ Parameters:
     Type: String
     Default: 10.0.0.0/16
 
+  MyPuplicSubnetCIDR1:
+    Description: My Public Subnet CIDR in the first Availability Zone
+    Type: String
+    Default: 10.0.0.0/24
+  
+  MyPuplicSubnetCIDR2:
+    Description: My Public Subnet CIDR in the second Availability Zone
+    Type: String
+    Default: 10.0.1.0/24
+
+  MyPrivateSubnetCIDR1:
+    Description: My Private Subnet CIDR in the first Availability Zone
+    Type: String
+    Default: 10.0.2.0/24
+
+  MyPrivateSubnetCIDR2:
+    Description: My Private Subnet CIDR in the second Availability Zone
+    Type: String
+    Default: 10.0.3.0/24
+  
 Resources:
   # instace profile contains the IAM Role name(s) that we want to associate to our auto scaling EC2 Servers
   # never give too much permissions to your EC2 instances! if they get hacked, the permissions get hacked also!
@@ -41,6 +61,50 @@ Resources:
       VpcId: !Ref myVPC
       InternetGatewayId: !Ref myInternetGateway
   
+  myPublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      VpcId: !Ref myVPC
+      CidrBlock: !Ref MyPuplicSubnetCIDR1
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Public Subnet Zone 1
+  
+  myPublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select [ 1, !GetAZs '']
+      VpcId: !Ref myVPC
+      CidrBlock: !Ref MyPuplicSubnetCIDR2
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Public Subnet Zone 2
+
+  myPrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      VpcId: !Ref myVPC
+      CidrBlock: !Ref MyPrivateSubnetCIDR1
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Private Subnet Zone 1
+
+  myPrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select [ 1, !GetAZs '' ]
+      VpcId: !Ref myVPC
+      CidrBlock: !Ref MyPrivateSubnetCIDR2
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Private Subnet Zone 2
+
   # ProfileWithRolesForOurApp:
   #   Type: AWS::IAM::InstanceProfile
   #   Properties: 

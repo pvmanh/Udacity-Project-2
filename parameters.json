@@ -6,5 +6,21 @@
 	{
 		"ParameterKey": "MyVpcIPv4CIDR",
 		"ParameterValue": "10.0.0.0/16"
+	},
+	{
+		"ParameterKey": "MyPuplicSubnetCIDR1",
+		"ParameterValue": "10.0.0.0/24"
+	},
+	{
+		"ParameterKey": "MyPuplicSubnetCIDR2",
+		"ParameterValue": "10.0.1.0/24"
+	},
+	{
+		"ParameterKey": "MyPrivateSubnetCIDR1",
+		"ParameterValue": "10.0.2.0/24"
+	},
+	{
+		"ParameterKey": "MyPrivateSubnetCIDR2",
+		"ParameterValue": "10.0.3.0/24"
 	}
 ]
