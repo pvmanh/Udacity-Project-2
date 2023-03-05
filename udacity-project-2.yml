@@ -346,7 +346,8 @@ Resources:
           apt-get install apache2 -y
           systemctl start apache2.service
           cd /var/www/html
-          aws s3 cp s3::/udacity-project-22/index.html
+          sudo chown -R $USER:$USER /var/www
+          echo "Udacity Demo Web Server Up and Running!" > index.html
       BlockDeviceMappings:
         - DeviceName: "/dev/sdk"
           Ebs:
