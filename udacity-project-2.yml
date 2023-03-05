@@ -239,6 +239,61 @@ Resources:
       Roles:
         - !Ref myS3ReadOnlyRole
 
+  myLoadBalanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: myLoadBalanceSecurityGroup
+      GroupDescription: Allow HTTP to Load Balance
+      VpcId: !Ref myVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: !Ref MyDestinationCidrBlock
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: !Ref MyDestinationCidrBlock
+
+  myJumBoxSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: myJumBoxSecurityGroup
+      GroupDescription: Allow SSH
+      VpcId: !Ref myVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref MyDestinationCidrBlock
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: !Ref MyDestinationCidrBlock
+
+  myWebAppSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: myWebAppSecurityGroup
+      GroupDescription: Allow HTTP to Web App
+      VpcId: !Ref myVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: !Ref MyDestinationCidrBlock
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref MyDestinationCidrBlock
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: !Ref MyDestinationCidrBlock
+
   # ProfileWithRolesForOurApp:
   #   Type: AWS::IAM::InstanceProfile
   #   Properties: 
