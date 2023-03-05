@@ -246,8 +246,8 @@ Resources:
               - s3:Get*
               - s3:List*
             Resource: 
-              - arn:aws:s3:::udacity-demo-1
-              - arn:aws:s3:::udacity-demo-1/*
+              - arn:aws:s3:::udacity-project-22
+              - arn:aws:s3:::udacity-project-22/*
       Roles:
         - !Ref myS3ReadOnlyRole
   
@@ -346,7 +346,7 @@ Resources:
           apt-get install apache2 -y
           systemctl start apache2.service
           cd /var/www/html
-          aws s3 cp s3::/udacity-demo-1/index.html
+          aws s3 cp s3::/udacity-project-22/index.html
       BlockDeviceMappings:
         - DeviceName: "/dev/sdk"
           Ebs:
