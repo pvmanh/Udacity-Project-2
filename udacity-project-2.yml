@@ -35,6 +35,10 @@ Parameters:
     Type: String
     Default: 10.0.3.0/24
   
+  MyDestinationCidrBlock:
+    Description: My Destination Cidr Block
+    Type: String
+    Default: 0.0.0.0/0
 Resources:
   # instace profile contains the IAM Role name(s) that we want to associate to our auto scaling EC2 Servers
   # never give too much permissions to your EC2 instances! if they get hacked, the permissions get hacked also!
@@ -128,6 +132,75 @@ Resources:
     Properties: 
       AllocationId: !GetAtt myNatGateway2EIP.AllocationId
       SubnetId: !Ref myPublicSubnet2
+
+  myPublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref myVPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Public Route Table
+
+  myPublicRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref myPublicRouteTable
+      DestinationCidrBlock: !Ref MyDestinationCidrBlock
+      GatewayId: !Ref myInternetGateway
+
+  myPublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref myPublicSubnet1
+      RouteTableId: !Ref myPublicRouteTable
+  
+  myPublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref myPublicSubnet2
+      RouteTableId: !Ref myPublicRouteTable
+
+  myPrivateRouteTable1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref myVPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Private Route Table 1
+
+  myPrivateRoute1:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref myPrivateRouteTable1
+      DestinationCidrBlock: !Ref MyDestinationCidrBlock
+      GatewayId: !Ref myNatGateway1
+
+  myPrivateSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref myPrivateSubnet1
+      RouteTableId: !Ref myPrivateRouteTable1
+  
+  myPrivateRouteTable2:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref myVPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Private Route Table 2
+
+  myPrivateRoute2:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref myPrivateRouteTable2
+      DestinationCidrBlock: !Ref MyDestinationCidrBlock
+      GatewayId: !Ref myNatGateway2
+
+  myPrivateSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref myPrivateSubnet2
+      RouteTableId: !Ref myPrivateRouteTable2
 
   # ProfileWithRolesForOurApp:
   #   Type: AWS::IAM::InstanceProfile
