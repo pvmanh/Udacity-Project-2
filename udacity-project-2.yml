@@ -202,6 +202,43 @@ Resources:
       SubnetId: !Ref myPrivateSubnet2
       RouteTableId: !Ref myPrivateRouteTable2
 
+  myS3ReadOnlyRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: S3ReadOnly
+      Path: "/"
+      AssumeRolePolicyDocument: 
+        Statement: 
+          - Effect: Allow
+            Principal: 
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+
+  myS3ReadOnlyPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: S3ReadOnlyAccess
+      PolicyDocument:  
+        Statement:
+          - Effect: Allow
+            Action: 
+              - s3:Get*
+              - s3:List*
+            Resource: 
+              - arn:aws:s3:::udacity-demo-1
+              - arn:aws:s3:::udacity-demo-1/*
+      Roles:
+        - !Ref myS3ReadOnlyRole
+  
+  myInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+        - !Ref myS3ReadOnlyRole
+
   # ProfileWithRolesForOurApp:
   #   Type: AWS::IAM::InstanceProfile
   #   Properties: 
