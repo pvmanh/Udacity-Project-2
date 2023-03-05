@@ -372,8 +372,8 @@ Resources:
         - !Ref myPrivateSubnet1
         - !Ref myPrivateSubnet2
       LaunchConfigurationName: !Ref myWebApplicationLaunchConfiguration
-      MaxSize: 2
-      MinSize: 3
+      MaxSize: 3
+      MinSize: 2
       TargetGroupARNs:
         - !Ref myWebAppTargetGroup
 
